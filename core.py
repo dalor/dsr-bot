@@ -8,6 +8,9 @@ import os
 
 BOT_ID = os.environ['BOT_ID']
 
+
+app = Flask(__name__)
+
 def stop_checker(a):
     checker = a.session.get('checker')
     if checker:
