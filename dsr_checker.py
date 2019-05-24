@@ -1,6 +1,9 @@
 from threading import Thread
 import requests
 import time
+import re
+from io import BytesIO
+import base64
 
 class DSRChecker(Thread):
     def __init__(self, bot, chat_id, chat_url):
@@ -22,6 +25,10 @@ class DSRChecker(Thread):
         if res['ok']:
             self.token = res['result'][0]['content']
 
+    def check_photo(self, text):
+        return re.match('data:image/[^;]+;base64[^"]+', text)
+
+
     def run(self):
         while self.is_run:
             try:
@@ -29,7 +36,12 @@ class DSRChecker(Thread):
                 for mess in messages:
                     if mess['id'] > self.last_id:
                         #if not mess['content'] in self.my_messages:
-                            self.bot.more([self.bot.msg(mess['content'], chat_id=chat_id) for chat_id in self.chat_ids])
+                        if not self.check_photo(mess['content']):
+                            send_urls = [self.bot.msg(mess['content'], chat_id=chat_id) for chat_id in self.chat_ids]
+                        else:
+                            photo = BytesIO(base64.b64decode(mess['content']))
+                            send_urls = [self.bot.photo(photo, chat_id=chat_id) for chat_id in self.chat_ids]
+                        self.bot.more(send_urls)
                         #else:
                             #self.my_messages.remove(mess['content'])
                 if messages:
