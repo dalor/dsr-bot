@@ -4,6 +4,7 @@ from dtelbot.inline import article
 
 from dsr_checker import DSRChecker
 
+from flask import Flask, request
 import os
 
 BOT_ID = os.environ['BOT_ID']
